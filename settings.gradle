@@ -1,0 +1,4 @@
+rootProject.name = 'development-rxjava'
+include ':rxjava-basics'
+
+project(':rxjava-basics').projectDir = "$rootDir/rxjava-basics" as File

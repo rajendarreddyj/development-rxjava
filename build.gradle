@@ -1,0 +1,110 @@
+plugins {
+	id "com.github.ben-manes.versions" version "0.20.0"
+}
+// define the group of the GAV
+group = 'com.rajendarreddyj'
+
+// define the version of the GAV
+version = 1.0
+
+description = "Root project of the rxjava projects that uses Gradle."
+
+allprojects {
+	apply plugin: "com.github.ben-manes.versions"
+	//Instructions for all projects
+	ext {
+		javaVersion="1.8"
+	    rxjavaVersion = "2.1.17"
+		junitVersion = "4.12"
+    }
+
+	// In this section you declare where to find the dependencies of your project
+	repositories {
+		// Use jcenter for resolving your dependencies.
+		// You can declare any Maven/Ivy/file repository here.
+		jcenter()
+		mavenLocal()
+		mavenCentral()
+		maven {
+			url "http://repo.maven.apache.org/maven2"
+		}
+	}
+
+	buildscript {
+		repositories {
+			jcenter()
+			mavenLocal()
+			mavenCentral()
+			maven {
+				url "http://repo.maven.apache.org/maven2"
+			}
+		}
+		dependencies {}
+	}
+}	
+
+subprojects {
+	//Instructions for each sub project
+	// Apply the java plugin to add support for Java
+	apply plugin: 'java'
+	apply plugin: 'idea'
+	apply plugin: 'eclipse'
+
+	group = rootProject.group
+	version = rootProject.version
+	sourceCompatibility = "${javaVersion}"
+	targetCompatibility = "${javaVersion}"
+	tasks.withType(JavaCompile) {
+		options.encoding = 'UTF-8'
+	}
+
+	dependencies {
+		// The production code uses Guava
+		compile "io.reactivex.rxjava2:rxjava:${rxjavaVersion}"
+		
+		// Use JUnit test framework
+		testCompile "junit:junit:${junitVersion}"
+	}
+
+	configurations.all {
+		//it.exclude group: 'commons-logging',	module: 'commons-logging'
+	}
+
+	configurations.all {
+		resolutionStrategy {
+            // fail eagerly on version conflict (includes transitive dependencies)
+            // e.g. multiple different versions of the same dependency (group and name are equal)
+			failOnVersionConflict()
+
+			// prefer modules that are part of this build (multi-project or composite build) over external modules
+    		preferProjectModules()
+
+            // force certain versions of dependencies (including transitive)
+            //  *append new forced modules:
+            
+            
+            //  *replace existing forced modules with new ones:
+			forcedModules = [
+			]
+		}
+	}
+
+}
+
+// Running 'gradle wrapper' will generate gradlew - Getting gradle wrapper working and using it will save you a lot of pain.
+task wrapper(type: Wrapper) {
+	gradleVersion = '4.9'
+}
+
+dependencyUpdates.resolutionStrategy {
+	componentSelection { rules ->
+		rules.all { ComponentSelection selection ->
+			boolean rejected = ['alpha', 'beta', 'rc', 'cr', 'm'].any { qualifier ->
+				selection.candidate.version ==~ /(?i).*[.-]${qualifier}[.\d-]*/
+			}
+			if (rejected) {
+				selection.reject('Release candidate')
+			}
+		}
+	}
+}
